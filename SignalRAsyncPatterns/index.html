@@ -2,22 +2,38 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title></title>
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/bootstrap-theme.min.css" rel="stylesheet" />
 </head>
 <body>
-    <h3>Async SignalR Patterns (<a href="https://github.com/davidfowl/SignalRAsyncPatterns">code</a>)</h3>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <div class="navbar-brand">Async SignalR Patterns</div>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        <div class="jumbotron">
+            <h2>SignalR Async Data loading demo</h2>
+            <p class="lead">The following demo shows different ways to get data from the server.</p>
+            <p><a href="https://github.com/davidfowl/SignalRAsyncPatterns" target="_blank" class="btn btn-primary btn-large">Get the code &raquo;</a></p>
+        </div>
 
-    <button id="scenario-1">Get all data</button>
-    <button id="scenario-2">Get data and show results as loaded serially</button>
-    <button id="scenario-3">Get data and show results in parallel</button>
+        <button class="btn btn-default" id="scenario-1">Get all data</button>
+        <button class="btn btn-default" id="scenario-2">Get data and show results as loaded serially</button>
+        <button class="btn btn-default" id="scenario-3">Get data and show results in parallel</button>
 
-    <dl>
-        <dt><strong>Scenario:</strong> <span id="scenario-title"></span> <span id="scenario-time"></span> </dt>
-        <dd>
-            <ul id="scenario-results"></ul>
-        </dd>
-    </dl>
+        <dl>
+            <dt><strong>Scenario:</strong> <span id="scenario-title"></span> <span id="scenario-time"></span> </dt>
+            <dd>
+                <ul id="scenario-results"></ul>
+            </dd>
+        </dl>
+    </div>
 
     <script src="Scripts/jquery-1.10.2.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
     <script src="Scripts/jquery.signalR-2.0.0.js"></script>
     <script src="signalr/hubs"></script>
     <script>
@@ -59,7 +75,7 @@
                     var start = new Date();
                     processor.server.loadDataOnDemand().done(function () {
                         $('#scenario-time').html((new Date() - start) + "ms");
-                    }); 
+                    });
                 });
 
                 $('#scenario-3').click(function () {
@@ -75,5 +91,6 @@
             });
         });
     </script>
+
 </body>
 </html>
