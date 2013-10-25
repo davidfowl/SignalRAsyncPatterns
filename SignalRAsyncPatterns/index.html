@@ -2,25 +2,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title></title>
-    <style>
-        #scenario-title {
-            
-        }
-
-        #scenario-time {
-
-        }
-    </style>
 </head>
 <body>
+    <h3>Async SignalR Patterns (<a href="https://github.com/davidfowl/SignalRAsyncPatterns">code</a>)</h3>
+
     <button id="scenario-1">Get all data</button>
     <button id="scenario-2">Get data and show results as loaded serially</button>
     <button id="scenario-3">Get data and show results in parallel</button>
 
-    <dt><strong>Scenario:</strong> <span id="scenario-title"></span> <span id="scenario-time"></span> </dt>
-    <dd>
-        <ul id="scenario-results"></ul>
-    </dd>
+    <dl>
+        <dt><strong>Scenario:</strong> <span id="scenario-title"></span> <span id="scenario-time"></span> </dt>
+        <dd>
+            <ul id="scenario-results"></ul>
+        </dd>
+    </dl>
 
     <script src="Scripts/jquery-1.10.2.js"></script>
     <script src="Scripts/jquery.signalR-2.0.0.js"></script>
