@@ -21,8 +21,9 @@
         </div>
 
         <button class="btn btn-default" id="scenario-1">Get all data</button>
-        <button class="btn btn-default" id="scenario-2">Get data and show results as loaded serially</button>
-        <button class="btn btn-default" id="scenario-3">Get data and show results in parallel</button>
+        <button class="btn btn-default" id="scenario-2">Get all data in parallel</button>
+        <button class="btn btn-default" id="scenario-3">Get data and show results as loaded serially</button>
+        <button class="btn btn-default" id="scenario-4">Get data and show results in parallel</button>
 
         <dl>
             <dt><strong>Scenario:</strong> <span id="scenario-title"></span> <span id="scenario-time"></span> </dt>
@@ -73,12 +74,28 @@
                     $('#scenario-title').html($(this).html());
 
                     var start = new Date();
-                    processor.server.loadDataOnDemand().done(function () {
+                    processor.server.getAllDataParallel().done(function (results) {
+                        $.each(results, function (_, val) {
+                            // Reuse the client function
+                            processor.client.loadResponse(val);
+                        });
+
                         $('#scenario-time').html((new Date() - start) + "ms");
                     });
                 });
 
                 $('#scenario-3').click(function () {
+                    reset();
+
+                    $('#scenario-title').html($(this).html());
+
+                    var start = new Date();
+                    processor.server.loadDataOnDemand().done(function () {
+                        $('#scenario-time').html((new Date() - start) + "ms");
+                    });
+                });
+
+                $('#scenario-4').click(function () {
                     reset();
 
                     $('#scenario-title').html($(this).html());

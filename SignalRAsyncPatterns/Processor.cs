@@ -30,6 +30,17 @@ namespace SignalRAsyncPatterns
             return results;
         }
 
+        public Task<string[]> GetAllDataParallel()
+        {
+            var results = new List<Task<string>>();
+            foreach (var url in _urls)
+            {
+                results.Add(MakeRequest(url));
+            }
+
+            return Task.WhenAll(results);
+        }
+
         public async Task LoadDataOnDemand()
         {
             foreach (var url in _urls)
