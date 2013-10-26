@@ -17,23 +17,33 @@ namespace SignalRAsyncPatterns
             "http://www.microsoft.com",
             "http://www.google.com",
             "http://www.bing.com",
+            "http://wwjs.badurlwillerror.netf",
             "http://www.reddit.com",
             "http://news.ycombinator.com",
         };
 
+        /// <summary>
+        /// Retrieves data from each URL in sequence and returns the entire result set.
+        /// </summary>
         public async Task<List<string>> GetAllDataSerial()
         {
             var results = new List<string>();
+
             foreach (var url in _urls)
             {
                 results.Add(await MakeRequest(url));
             }
+
             return results;
         }
 
+        /// <summary>
+        /// Retrieves data from each URL in parallel and returns the entire result set.
+        /// </summary>
         public Task<string[]> GetAllDataParallel()
         {
             var results = new List<Task<string>>();
+
             foreach (var url in _urls)
             {
                 results.Add(MakeRequest(url));
@@ -42,6 +52,10 @@ namespace SignalRAsyncPatterns
             return Task.WhenAll(results);
         }
 
+        /// <summary>
+        /// Retrieves data from each URL in sequence and pushs the results to the browser as
+        /// they arrive.
+        /// </summary>
         public async Task LoadDataOnDemandSerial()
         {
             foreach (var url in _urls)
@@ -50,18 +64,10 @@ namespace SignalRAsyncPatterns
             }
         }
 
-        public Task LoadDataOnDemandParallelViaDispatch()
-        {
-            var tasks = new List<Task>(_urls.Length);
-            
-            foreach (var url in _urls)
-            {
-                tasks.Add(Task.Run(async () => SendResponse(await MakeRequest(url))));
-            }
-
-            return Task.WhenAll(tasks);
-        }
-
+        /// <summary>
+        /// Retrieves data from each URL in parallel and pushes the results to the browser
+        /// as they arrive in sequence.
+        /// </summary>
         public async Task LoadDataOnDemandParallelRequestsWithSerialCallbacks()
         {
             var tasks = _urls.Select(url => MakeRequest(url))
@@ -77,6 +83,26 @@ namespace SignalRAsyncPatterns
             }
         }
 
+        /// <summary>
+        /// Retrieves data from each URL in parallel and pushes the results to the browser
+        /// as they arrive in parallel by dispatching each call to a new thread.
+        /// </summary>
+        public Task LoadDataOnDemandParallelViaDispatch()
+        {
+            var tasks = new List<Task>(_urls.Length);
+            
+            foreach (var url in _urls)
+            {
+                tasks.Add(Task.Run(async () => SendResponse(await MakeRequest(url))));
+            }
+
+            return Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Retrieves data from each URL in parallel and pushes the results to the browser
+        /// as they arrive in parallel by dispatching each call with a TAP style ContinueWith.
+        /// </summary>
         public Task LoadDataOnDemandAllParallelWithParallelCallbacksViaTAP()
         {
             var tasks = new List<Task>(_urls.Length);
@@ -85,7 +111,10 @@ namespace SignalRAsyncPatterns
             {
                 tasks.Add(MakeRequest(url).ContinueWith(t =>
                 {
-                    // Need to handle exceptions here manually via t.Exception
+                    if (t.Status != TaskStatus.RanToCompletion)
+                    {
+                        throw t.Exception;
+                    }
                     
                     SendResponse(t.Result);
                 }));
@@ -94,7 +123,11 @@ namespace SignalRAsyncPatterns
             return Task.WhenAll(tasks);
         }
 
-        public Task LoadDataOnDemandAllParallelWithParallelCallbacksViaNoLinq()
+        /// <summary>
+        /// Retrieves data from each URL in parallel and pushes the results to the browser
+        /// as they arrive in parallel by an async lambda.
+        /// </summary>
+        public Task LoadDataOnDemandAllParallelWithParallelCallbacksViaFunc()
         {
             var tasks = new List<Task>(_urls.Length);
             Func<string, Task> go = async url => SendResponse(await MakeRequest(url));
@@ -107,14 +140,19 @@ namespace SignalRAsyncPatterns
             return Task.WhenAll(tasks);
         }
 
+        /// <summary>
+        /// Retrieves data from each URL in parallel and pushes the results to the browser
+        /// as they arrive in parallel by LINQ and async lambdas.
+        /// </summary>
         public Task LoadDataOnDemandAllParallelWithParallelCallbacksViaLinq()
         {
             return Task.WhenAll(_urls.Select(async url => SendResponse(await MakeRequest(url))));
         }
+
         /// <summary>
-        /// Coming in a future version...
+        /// Coming in a future version, you can push results directly to the caller via IProgress`T
         /// </summary>
-        public Task LoadDataOnDemandAllParallelWithParallelCallbacksViaLinq(IProgress<string> progress)
+        public Task LoadDataOnDemandAllParallelViaIProgress(IProgress<string> progress)
         {
             return Task.WhenAll(_urls.Select(async url => progress.Report(await MakeRequest(url))));
         }
@@ -128,7 +166,7 @@ namespace SignalRAsyncPatterns
         {
             try
             {
-                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
+                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
                 {
                     var response = await _client.GetAsync(url, cts.Token);
                     return url + " -> " + response.StatusCode;
@@ -136,7 +174,7 @@ namespace SignalRAsyncPatterns
             }
             catch (Exception ex)
             {
-                return url + " -> " + ex.ToString();
+                return url + " -> " + ex.GetBaseException().Message;
             }
         }
     }

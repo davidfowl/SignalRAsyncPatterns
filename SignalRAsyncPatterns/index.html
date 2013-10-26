@@ -20,10 +20,14 @@
             <p><a href="https://github.com/davidfowl/SignalRAsyncPatterns" target="_blank" class="btn btn-primary btn-large">Get the code &raquo;</a></p>
         </div>
 
-        <button class="btn btn-default" id="scenario-1">Get all data</button>
-        <button class="btn btn-default" id="scenario-2">Get all data in parallel</button>
-        <button class="btn btn-default" id="scenario-3">Get data and show results as loaded serially</button>
-        <button class="btn btn-default" id="scenario-4">Get data and show results in parallel</button>
+        <button class="btn btn-sm" id="scenario-1">Get all data</button>
+        <button class="btn btn-sm" id="scenario-2">Get all data in parallel</button>
+        <button class="btn btn-sm" id="scenario-3">Get data and show results as loaded serially</button>
+        <button class="btn btn-sm" id="scenario-4">Get data and show results in parallel</button>
+        <button class="btn btn-sm" id="scenario-5">Get data and show results in parallel (threaded)</button>
+        <button class="btn btn-sm" id="scenario-6">Get data and show results in parallel (TAP)</button>
+        <button class="btn btn-sm" id="scenario-7">Get data and show results in parallel (Func)</button>
+        <button class="btn btn-sm" id="scenario-8">Get data and show results in parallel (LINQ)</button>
 
         <dl>
             <dt><strong>Scenario:</strong> <span id="scenario-title"></span> <span id="scenario-time"></span> </dt>
@@ -33,10 +37,10 @@
         </dl>
     </div>
 
-    <script src="Scripts/jquery-1.10.2.js"></script>
+    <script src="Scripts/jquery-1.10.2.min.js"></script>
     <script src="Scripts/bootstrap.min.js"></script>
-    <script src="Scripts/jquery.signalR-2.0.0.js"></script>
-    <script src="signalr/hubs"></script>
+    <script src="Scripts/jquery.signalR-2.0.0.min.js"></script>
+    <script src="signalr/js"></script>
     <script>
         $(function () {
             function reset() {
@@ -48,64 +52,60 @@
             var processor = $.connection.processor;
 
             processor.client.loadResponse = function (val) {
-                $('#scenario-results').append($("<li/>").add($("<pre />").text(val)));
+                $('#scenario-results').append($('<li/>').append($('<pre/>').text(val)));
             };
 
             $.connection.hub.start().done(function () {
                 $('#scenario-1').click(function () {
-                    reset();
-
-                    $('#scenario-title').html($(this).html());
-
-                    var start = new Date();
-                    processor.server.getAllData().done(function (results) {
-                        $.each(results, function (_, val) {
-                            // Reuse the client function
-                            processor.client.loadResponse(val);
-                        });
-
-                        $('#scenario-time').html((new Date() - start) + "ms");
-                    });
+                    processResult(processor.server.getAllDataSerial());
                 });
 
                 $('#scenario-2').click(function () {
-                    reset();
+                    processResult(processor.server.getAllDataParallel());
+                });
 
-                    $('#scenario-title').html($(this).html());
+                $('#scenario-3').click(function () {
+                    processResult(processor.server.loadDataOnDemandSerial());
+                });
 
-                    var start = new Date();
-                    processor.server.getAllDataParallel().done(function (results) {
+                $('#scenario-4').click(function () {
+                    processResult(processor.server.loadDataOnDemandParallelRequestsWithSerialCallbacks());
+                });
+
+                $('#scenario-5').click(function () {
+                    processResult(processor.server.loadDataOnDemandParallelViaDispatch());
+                });
+
+                $('#scenario-6').click(function () {
+                    processResult(processor.server.loadDataOnDemandAllParallelWithParallelCallbacksViaTAP());
+                });
+
+                $('#scenario-7').click(function () {
+                    processResult(processor.server.loadDataOnDemandAllParallelWithParallelCallbacksViaFunc());
+                });
+
+                $('#scenario-8').click(function () {
+                    processResult(processor.server.loadDataOnDemandAllParallelWithParallelCallbacksViaLinq());
+                });
+            });
+
+            function processResult(promise) {
+                reset();
+
+                $('#scenario-title').html($(this).html());
+
+                var start = new Date();
+                promise.done(function (results) {
+                    if (results) {
                         $.each(results, function (_, val) {
                             // Reuse the client function
                             processor.client.loadResponse(val);
                         });
+                    }
 
-                        $('#scenario-time').html((new Date() - start) + "ms");
-                    });
+                    $('#scenario-time').html((new Date() - start) + 'ms');
                 });
-
-                $('#scenario-3').click(function () {
-                    reset();
-
-                    $('#scenario-title').html($(this).html());
-
-                    var start = new Date();
-                    processor.server.loadDataOnDemand().done(function () {
-                        $('#scenario-time').html((new Date() - start) + "ms");
-                    });
-                });
-
-                $('#scenario-4').click(function () {
-                    reset();
-
-                    $('#scenario-title').html($(this).html());
-
-                    var start = new Date();
-                    processor.server.loadDataOnDemandParallel().done(function () {
-                        $('#scenario-time').html((new Date() - start) + "ms");
-                    });
-                });
-            });
+            }
         });
     </script>
 
