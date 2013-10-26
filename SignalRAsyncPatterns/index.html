@@ -48,7 +48,7 @@
             var processor = $.connection.processor;
 
             processor.client.loadResponse = function (val) {
-                $('#scenario-results').append("<li><pre>" + val + "</pre></li>");
+                $('#scenario-results').append($("<li/>").add($("<pre />").text(val)));
             };
 
             $.connection.hub.start().done(function () {
