@@ -60,7 +60,7 @@ namespace SignalRAsyncPatterns
         {
             foreach (var url in _urls)
             {
-                Clients.Caller.loadResponse(await MakeRequest(url));
+                SendResponse(await MakeRequest(url));
             }
         }
 
